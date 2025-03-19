@@ -52,7 +52,7 @@ Bonus Points System: Earn additional points for sequences of error-free words, h
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/typing-test-app.git
+   git clone https://github.com/DannyWhyze/TypingInputTest.git
    cd typing-test-app
    ```
 
