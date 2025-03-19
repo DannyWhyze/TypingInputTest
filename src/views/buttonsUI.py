@@ -1,25 +1,21 @@
 from PyQt6.QtWidgets import QWidget, QPushButton, QHBoxLayout, QSizePolicy, QLabel
 from PyQt6.QtCore import Qt
-from src.utils.labels import Labels  # Absoluter Import
+from src.utils.labels import Labels
+from src.views.tip_info import TipInfo
 
 class ButtonsUI(QWidget):
-    def __init__(self):
+    def __init__(self, model):
         """
-        Erstellt ein Widget mit drei Buttons, die ohne Abstand nebeneinander liegen,
-        und einem Label rechts daneben.
+        Widget mit drei Buttons, Label für "Minute(n)" und einem Tippinfo-Widget rechts daneben.
         """
         super().__init__()
-        # Kein automatisches Dehnen im Container
+        self.model = model
+
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        
-        # Layout ohne Parent erstellen (wichtig!)
         self.layout = QHBoxLayout(self)
-        
-        # Komplett alle Abstände entfernen
         self.layout.setSpacing(0)
-        self.layout.setContentsMargins(10, 0, 0, 0)  # Kleiner linker Rand
-        
-        # Button-Style ohne interne Abstände
+        self.layout.setContentsMargins(10, 0, 0, 0)
+
         button_style = """
         QPushButton {
             margin: 0;
@@ -27,35 +23,51 @@ class ButtonsUI(QWidget):
             border: 1px solid #888;
         }
         """
-        
-        # Button "1" 
+
+        # Button "1" mit Click-Handler
         self.button1 = QPushButton("1")
         self.button1.setFixedSize(50, 30)
         self.button1.setStyleSheet(button_style)
+        self.button1.clicked.connect(lambda: self.set_timer_minutes(1))
         self.layout.addWidget(self.button1)
-        
-        # Button "3"
+
+        # Button "3" mit Click-Handler
         self.button3 = QPushButton("3")
         self.button3.setFixedSize(50, 30)
         self.button3.setStyleSheet(button_style)
+        self.button3.clicked.connect(lambda: self.set_timer_minutes(3))
         self.layout.addWidget(self.button3)
-        
-        # Button "5"
+
+        # Button "5" mit Click-Handler
         self.button5 = QPushButton("5")
         self.button5.setFixedSize(50, 30)
         self.button5.setStyleSheet(button_style)
+        self.button5.clicked.connect(lambda: self.set_timer_minutes(5))
         self.layout.addWidget(self.button5)
-        
-        # Minimaler Abstand vor dem Label
+
         self.layout.addSpacing(5)
-        
-        # Label "Minute(n)" hinzufügen
+
+        # Label "Minute(n)"
         self.minute_label = QLabel(Labels.MINUTE_LABEL)
-        self.minute_label.setStyleSheet("font-size: 16px;")  # Größere Schrift
+        self.minute_label.setStyleSheet("font-size: 16px;")
         self.layout.addWidget(self.minute_label)
+
+        # Neues Tippinfo-Widget rechts daneben
+        self.layout.addSpacing(10)
+        self.tip_info = TipInfo(self.model)
+        self.layout.addWidget(self.tip_info)
+
+        self.setFixedWidth(420)
         
-        # Wichtig: Verhindere, dass das Layout den Platz ausfüllt
-        # self.layout.addStretch(1)  <- Diese Zeile entfernen!
-        
-        # Gesamtbreite auf exakt die Button-Breite festlegen
-        self.setFixedWidth(320)  # 3 buttons × 40px width
+    def set_timer_minutes(self, minutes):
+        """
+        Setzt den Timer auf die angegebene Minutenzahl, zeigt ihn an, startet ihn aber noch nicht.
+        """
+        if self.model.set_timer(minutes):
+            # Timer nicht starten, aber anzeigen
+            print(f"Timer auf {minutes} Minute(n) gesetzt und wartet auf Tippbeginn.")
+            
+            # Countdown-Widget aktualisieren, ohne den Timer zu starten
+            window = self.window()
+            if hasattr(window, 'countdown'):
+                window.countdown.show_initial_time()
