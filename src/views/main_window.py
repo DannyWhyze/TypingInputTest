@@ -48,6 +48,8 @@ class MainWindow(QMainWindow):
         
         # Timer-Widget links
         self.countdown = CountdownWidget(self.model)
+        # Signal-Verbindung für Timer-Ende hinzufügen
+        self.countdown.timerFinished.connect(self.timer_finished)  # Neue Verbindung
         self.countdown.timerFinished.connect(self.buttons.show_results_button)
         input_area.addWidget(self.countdown)
         
@@ -77,3 +79,32 @@ class MainWindow(QMainWindow):
         self.countdown.time_label.setText("00:00")
         self.target_text.refresh_text()
         self.buttons.results_button.hide()
+        
+        # Eingabefeld wieder aktivieren (dies fehlte)
+        self.input_field.text_edit.setReadOnly(False)
+        # Styling für aktives Eingabefeld wiederherstellen
+        self.input_field.text_edit.setStyleSheet("""
+            QTextEdit {
+                font-size: 16px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+        """)
+
+    def timer_finished(self):
+        """Wird aufgerufen, wenn der Timer abläuft"""
+        # Eingabefeld deaktivieren
+        self.input_field.text_edit.setReadOnly(True)
+        # Optional: Visuellen Hinweis geben
+        self.input_field.text_edit.setStyleSheet("""
+            QTextEdit {
+                font-size: 16px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: #f0f0f0;  /* Hellgrauer Hintergrund zur Indikation */
+            }
+        """)
+        # Fokus auf das Fenster setzen (Cursor aus dem Eingabefeld nehmen)
+        self.setFocus()
