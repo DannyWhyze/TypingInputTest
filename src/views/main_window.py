@@ -44,6 +44,7 @@ class MainWindow(QMainWindow):
         
         # Timer-Widget links
         self.countdown = CountdownWidget(self.model)
+        self.countdown.timerFinished.connect(self.buttons.show_results_button)
         input_area.addWidget(self.countdown)
         
         # Eingabefeld rechts - jetzt mit Verweis auf das TargetTextWidget
@@ -59,3 +60,16 @@ class MainWindow(QMainWindow):
     def start_countdown(self):
         """Startet den Countdown nach Button-Klick"""
         self.countdown.start_timer()
+
+    def reset_for_new_test(self):
+        """Setzt die Anwendung für einen neuen Test zurück"""
+        # Model zurücksetzen
+        self.model.reset_timer()
+        self.model.keystroke_count = 0
+        
+        # UI-Elemente zurücksetzen
+        self.input_field.clear_text()
+        self.input_field.countdown_started = False
+        self.countdown.time_label.setText("00:00")
+        self.target_text.refresh_text()
+        self.buttons.results_button.hide()

@@ -1,7 +1,10 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
-from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtCore import QTimer, Qt, pyqtSignal
 
 class CountdownWidget(QWidget):
+    # Signal für Timer-Ende
+    timerFinished = pyqtSignal()
+
     def __init__(self, model):
         super().__init__()
         self.model = model
@@ -45,6 +48,8 @@ class CountdownWidget(QWidget):
             # Timer ist abgelaufen
             self.time_label.setText("00:00")
             self.timer.stop()
+            # Signal auslösen, dass der Timer abgelaufen ist
+            self.timerFinished.emit()
     
     def start_timer(self):
         """Startet die Timer-Anzeige"""

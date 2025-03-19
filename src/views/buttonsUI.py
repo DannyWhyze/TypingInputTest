@@ -56,8 +56,29 @@ class ButtonsUI(QWidget):
         self.layout.addSpacing(10)
         self.tip_info = TipInfo(self.model)
         self.layout.addWidget(self.tip_info)
+        
+        # Ergebnis-Button (initial unsichtbar)
+        self.results_button = QPushButton("Ergebnis")
+        self.results_button.setStyleSheet("""
+            QPushButton {
+                font-size: 16px;
+                font-weight: bold;
+                padding: 8px 15px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                margin-left: 10px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        self.results_button.setFixedSize(120, 35)
+        self.layout.addWidget(self.results_button)
+        self.results_button.hide()  # Initial verstecken
 
-        self.setFixedWidth(520)  # Erhöht von 420 auf 520 für breiteres TipInfo-Widget
+        self.setFixedWidth(650)  # Erhöht wegen des zusätzlichen Buttons
         
     def set_timer_minutes(self, minutes):
         """
@@ -71,3 +92,16 @@ class ButtonsUI(QWidget):
             window = self.window()
             if hasattr(window, 'countdown'):
                 window.countdown.show_initial_time()
+    
+    def show_results_button(self):
+        """Zeigt den Ergebnis-Button an."""
+        self.results_button.show()
+        self.results_button.clicked.connect(self.open_results_window)
+
+    def open_results_window(self):
+        """Öffnet das Ergebnisfenster"""
+        from src.views.results_window import ResultsWindow
+        
+        # Dialog erstellen und öffnen
+        results_dialog = ResultsWindow(self.model, self.window())
+        results_dialog.exec()  # Modal öffnen (blockiert bis Dialog geschlossen wird)
