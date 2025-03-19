@@ -103,5 +103,9 @@ class ButtonsUI(QWidget):
         from src.views.results_window import ResultsWindow
         
         # Dialog erstellen und öffnen
-        results_dialog = ResultsWindow(self.model, self.window())
+        window = self.window()
+        if hasattr(window, 'stats_model'):
+            results_dialog = ResultsWindow(self.model, window, stats_model=window.stats_model)
+        else:
+            results_dialog = ResultsWindow(self.model, window)
         results_dialog.exec()  # Modal öffnen (blockiert bis Dialog geschlossen wird)

@@ -1,8 +1,9 @@
 from PyQt6.QtWidgets import QTextEdit, QWidget, QVBoxLayout
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, Qt
+from src.models.statisticsModel import StatisticsModel
 
 class InputField(QWidget):
-    def __init__(self, model, target_text_widget, placeholder_text="Tippe den obigen Text ab..."):
+    def __init__(self, model, target_text_widget, stats_model=None, placeholder_text="Tippe den obigen Text ab..."):
         """
         Erstellt ein Widget mit einem größeren Textfeld (Multiline).
         :param placeholder_text: Platzhaltertext für das Textfeld.
@@ -10,6 +11,8 @@ class InputField(QWidget):
         super().__init__()
         self.model = model  # Verweis auf MainModel
         self.target_text_widget = target_text_widget
+        # StatisticsModel verwenden oder neu erstellen
+        self.stats_model = stats_model if stats_model else StatisticsModel(model)
         
         self.layout = QVBoxLayout(self)
         # Keine Abstände im Layout
@@ -31,6 +34,7 @@ class InputField(QWidget):
 
         # Signal anbinden
         self.text_edit.textChanged.connect(self.on_text_changed)
+        self.text_edit.keyPressEvent = self.key_press_event
 
         self.setLayout(self.layout)
 
@@ -54,10 +58,35 @@ class InputField(QWidget):
         status_list = self.model.check_typing(typed_text)
         self.target_text_widget.update_colored_text(status_list)
         
-        # Aktualisiere andere Widgets
+        # Aktualisiere andere Widgets und maximale Tippgeschwindigkeit
         window = self.window()
         if hasattr(window, 'buttons') and hasattr(window.buttons, 'tip_info'):
+            current_speed = self.model.get_keystrokes_per_second()
             window.buttons.tip_info.update_info()
+            # Maximale Geschwindigkeit aktualisieren
+            self.stats_model.update_max_speed(current_speed)
+
+    def key_press_event(self, event):
+        """Überwacht jeden einzelnen Tastendruck"""
+        # Erkennung von Backspace
+        is_backspace = event.key() == Qt.Key.Key_Backspace
+        
+        if is_backspace:
+            self.stats_model.track_keystroke(None, None, is_backspace=True)
+        else:
+            # Normaler Tastendruck
+            key_char = event.text()
+            if key_char:  # Nur sichtbare Zeichen verarbeiten
+                cursor_pos = self.text_edit.textCursor().position()
+                # Zielzeichen an dieser Position ermitteln
+                target_text = self.target_text_widget.toPlainText()
+                if cursor_pos < len(target_text):
+                    target_char = target_text[cursor_pos]
+                    # Zeichen tracken
+                    self.stats_model.track_keystroke(key_char, target_char)
+        
+        # Standard-Ereignisverarbeitung nicht blockieren
+        QTextEdit.keyPressEvent(self.text_edit, event)
 
     def start_countdown(self):
         """Startet den Countdown im Hauptfenster."""

@@ -1,13 +1,19 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QFrame
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFont
+from src.models.statisticsModel import StatisticsModel
+from src.views.statistics_widget import StatisticsWidget
 
 class ResultsWindow(QDialog):
-    def __init__(self, model, parent=None):
+    def __init__(self, model, parent=None, stats_model=None):
         super().__init__(parent)
         self.model = model
+        
+        # StatisticsModel verwenden oder neu erstellen
+        self.statistics_model = stats_model if stats_model else StatisticsModel(model)
+        
         self.setWindowTitle("Tipptest - Ergebnisse")
-        self.setFixedSize(500, 400)
+        self.setFixedSize(550, 500)  # Vergrößert für die Statistik
         self.setModal(True)
         
         # Hauptlayout
@@ -27,6 +33,9 @@ class ResultsWindow(QDialog):
         # Ergebnisse anzeigen
         self.create_results_section()
         
+        # Tippgenauigkeit-Statistik
+        self.create_accuracy_section()
+        
         # Buttons am unteren Rand
         self.create_button_row()
         
@@ -39,7 +48,6 @@ class ResultsWindow(QDialog):
         keystroke_count = self.model.keystroke_count
         time_in_minutes = self.model.timer_duration / 60
         keystrokes_per_minute = round(keystroke_count / time_in_minutes, 1)
-        keystrokes_per_second = self.model.get_keystrokes_per_second()
         
         # Ergebniscontainer
         results_layout = QVBoxLayout()
@@ -49,7 +57,7 @@ class ResultsWindow(QDialog):
             ("Gesamte Tastenanschläge:", f"{keystroke_count}"),
             ("Zeit:", f"{int(time_in_minutes)} Minute(n)"),
             ("Anschläge pro Minute:", f"{keystrokes_per_minute}"),
-            ("Anschläge pro Sekunde:", f"{keystrokes_per_second}/s"),
+            # Die Zeile für Anschläge pro Sekunde wurde entfernt
         ]
         
         # Jede Ergebniszeile erstellen
@@ -71,6 +79,38 @@ class ResultsWindow(QDialog):
             results_layout.addLayout(row)
         
         self.layout.addLayout(results_layout)
+    
+    def create_accuracy_section(self):
+        """Erstellt den Tippgenauigkeit-Bereich"""
+        # Trennlinie
+        separator = QFrame()
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setFrameShadow(QFrame.Shadow.Sunken)
+        separator.setLineWidth(1)
+        self.layout.addWidget(separator)
+        
+        # Überschrift
+        accuracy_title = QLabel("Tippgenauigkeit")
+        accuracy_title.setStyleSheet("font-size: 16px; font-weight: bold;")
+        accuracy_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.layout.addWidget(accuracy_title)
+        
+        # Statistik berechnen
+        typed_text = self.get_typed_text()
+        statistics = self.statistics_model.calculate_typing_statistics(typed_text)
+        
+        # StatisticsWidget erstellen und hinzufügen - jetzt mit Referenz zum stats_model
+        stats_widget = StatisticsWidget(statistics, self.statistics_model)
+        self.layout.addWidget(stats_widget)
+        
+    def get_typed_text(self):
+        """
+        Holt den getippten Text vom Hauptfenster
+        """
+        parent = self.parent()
+        if parent and hasattr(parent, 'input_field'):
+            return parent.input_field.get_text()
+        return ""  # Fallback, wenn kein Text verfügbar
     
     def create_button_row(self):
         """Erstellt die Reihe mit Buttons am Ende des Dialogs"""

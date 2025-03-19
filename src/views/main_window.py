@@ -15,6 +15,10 @@ class MainWindow(QMainWindow):
         
         # Model erzeugen
         self.model = MainModel()
+        # StatisticsModel zentral erstellen
+        from src.models.statisticsModel import StatisticsModel
+        self.stats_model = StatisticsModel(self.model)
+        
         self.initUI()
 
     def initUI(self):
@@ -47,8 +51,8 @@ class MainWindow(QMainWindow):
         self.countdown.timerFinished.connect(self.buttons.show_results_button)
         input_area.addWidget(self.countdown)
         
-        # Eingabefeld rechts - jetzt mit Verweis auf das TargetTextWidget
-        self.input_field = InputField(self.model, self.target_text)
+        # Eingabefeld rechts - jetzt mit dem zentralen StatisticsModel
+        self.input_field = InputField(self.model, self.target_text, stats_model=self.stats_model)
         input_area.addWidget(self.input_field)
         
         # Horizontales Layout zum Hauptlayout hinzufügen
