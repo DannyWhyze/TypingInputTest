@@ -20,9 +20,14 @@ class HighscoreModel:
         self.highscores = []
         self.load_highscores()
         
-    def add_highscore(self, name, score, duration, words_per_minute):
+    def add_highscore(self, name, score, duration, words_per_minute, 
+                      chars_per_minute=0, errors_per_minute=0, max_chars_per_second=0):
         """Fügt einen neuen Highscore hinzu"""
-        highscore = Highscore(name, score, duration, words_per_minute)
+        highscore = Highscore(name, score, duration, words_per_minute, 
+                             date=None,
+                             chars_per_minute=chars_per_minute,
+                             errors_per_minute=errors_per_minute,
+                             max_chars_per_second=max_chars_per_second)
         self.highscores.append(highscore)
         self.highscores.sort(key=lambda x: x.score, reverse=True)  # Sortieren nach Punktzahl
         self.save_highscores()
