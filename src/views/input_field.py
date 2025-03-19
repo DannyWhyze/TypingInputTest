@@ -75,8 +75,7 @@ class InputField(QWidget):
         # Definition der zu ignorierenden Tasten:
         ignore_keys = {
             Qt.Key.Key_Shift, Qt.Key.Key_Control, Qt.Key.Key_Alt,
-            Qt.Key.Key_AltGr, Qt.Key.Key_CapsLock, Qt.Key.Key_Meta,
-            Qt.Key.Key_Fn
+            Qt.Key.Key_AltGr, Qt.Key.Key_CapsLock, Qt.Key.Key_Meta
         }
         # Sonderfälle: Enter nicht als Anschlag zählen; Pfeiltasten, Tab ignorieren
         navigation_keys = {
