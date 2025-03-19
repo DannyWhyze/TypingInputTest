@@ -49,6 +49,10 @@ class InputField(QWidget):
             window = self.window()
             if hasattr(window, 'countdown'):
                 window.countdown.start_timer()
+            
+            # Restart-Button aktivieren, sobald das Tippen beginnt
+            if hasattr(window, 'restart_button'):
+                window.restart_button.setEnabled(True)
         
         # Tastenanschläge zählen
         self.model.increment_keystrokes()

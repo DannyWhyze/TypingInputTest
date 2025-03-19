@@ -51,6 +51,11 @@ class ApplicationMenuBar(QMenuBar):
         """Erstellt das File-Menü"""
         file_menu = self.addMenu("&File")
         
+        # Neu starten Aktion
+        restart_action = QAction("Neu starten", self)
+        restart_action.triggered.connect(self.restart_game)
+        file_menu.addAction(restart_action)
+        
         # Highscore anzeigen Aktion
         show_highscores_action = QAction("Highscores anzeigen", self)
         show_highscores_action.triggered.connect(self.show_highscores)
@@ -109,3 +114,8 @@ class ApplicationMenuBar(QMenuBar):
                 QMessageBox.information(self.parent, "Erfolg", "Alle Highscores wurden gelöscht.")
             else:
                 QMessageBox.warning(self.parent, "Fehler", "Highscores konnten nicht gelöscht werden.")
+
+    def restart_game(self):
+        """Startet das Spiel neu"""
+        if hasattr(self.parent, 'reset_for_new_test'):
+            self.parent.reset_for_new_test()

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QPushButton
 from PyQt6.QtCore import Qt
 from src.views.buttonsUI import ButtonsUI
 from src.models.main_model import MainModel
@@ -13,6 +13,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Tipptraining")
         self.model = MainModel()
+        # Flag für manuellen Reset
+        self.manual_reset = False
         # StatisticsModel zentral erstellen
         from src.models.statisticsModel import StatisticsModel
         self.stats_model = StatisticsModel(self.model)
@@ -62,6 +64,37 @@ class MainWindow(QMainWindow):
         # Horizontales Layout zum Hauptlayout hinzufügen
         main_layout.addLayout(input_area)
         
+        # Neustarten-Button unter dem Eingabefeld (horizontal zentriert)
+        restart_container = QHBoxLayout()
+        restart_container.addStretch(1)
+        
+        self.restart_button = QPushButton("Neu starten")
+        self.restart_button.setStyleSheet("""
+            QPushButton {
+                font-size: 16px;
+                font-weight: bold;
+                padding: 8px 15px;
+                background-color: #ff9800;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                min-width: 150px;
+            }
+            QPushButton:hover {
+                background-color: #f57c00;
+            }
+            QPushButton:disabled {
+                background-color: #cccccc;
+                color: #666666;
+            }
+        """)
+        self.restart_button.setEnabled(False)  # Initial deaktiviert
+        self.restart_button.clicked.connect(self.reset_for_new_test)
+        restart_container.addWidget(self.restart_button)
+        restart_container.addStretch(1)
+        
+        main_layout.addLayout(restart_container)
+        
         # Extra Platz nach unten schieben
         main_layout.addStretch(1)
         
@@ -71,8 +104,12 @@ class MainWindow(QMainWindow):
 
     def reset_for_new_test(self):
         """Setzt die Anwendung für einen neuen Test zurück"""
+        # Timer stoppen, sodass kein timerFinished-Signal mehr emittiert wird
+        self.countdown.stop_timer()
+        
         # Model zurücksetzen
-        self.model.reset_timer()
+        self.model.timer_duration = 0
+        self.model.time_remaining = 0
         self.model.keystroke_count = 0
         
         # UI-Elemente zurücksetzen
@@ -80,11 +117,18 @@ class MainWindow(QMainWindow):
         self.input_field.countdown_started = False
         self.countdown.time_label.setText("00:00")
         self.target_text.refresh_text()
-        self.buttons.results_button.hide()
         
-        # Eingabefeld wieder aktivieren (dies fehlte)
+        # Ergebnis-Button deaktivieren und eventuelle Click-Signale trennen
+        if hasattr(self, 'buttons') and hasattr(self.buttons, 'results_button'):
+            self.buttons.results_button.setEnabled(False)
+            # Falls Click-Signale verbunden sind, trenne sie:
+            try:
+                self.buttons.results_button.clicked.disconnect()
+            except Exception:
+                pass
+        
+        # Eingabefeld wieder aktivieren
         self.input_field.text_edit.setReadOnly(False)
-        # Styling für aktives Eingabefeld wiederherstellen
         self.input_field.text_edit.setStyleSheet("""
             QTextEdit {
                 font-size: 16px;
@@ -93,6 +137,12 @@ class MainWindow(QMainWindow):
                 border-radius: 5px;
             }
         """)
+        
+        # Neustart-Button deaktivieren bis zum nächsten Tippbeginn
+        self.restart_button.setEnabled(False)
+        
+        # Hinweistext aktualisieren
+        self.text_info.info_label.setText("Bitte wähle eine Zeitdauer (1, 3 oder 5 Minuten) und tippe dann den Text ab.")
 
     def timer_finished(self):
         """Wird aufgerufen, wenn der Timer abläuft"""

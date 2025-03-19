@@ -99,7 +99,7 @@ class ButtonsUI(QWidget):
         self.highscores_button.clicked.connect(self.show_highscores)
         middle_layout.addWidget(self.highscores_button)
         
-        # Ergebnis-Button direkt neben dem Highscore-Button
+        # Ergebnis-Button (immer sichtbar, aber deaktiviert)
         self.results_button = QPushButton("Ergebnis")
         self.results_button.setStyleSheet("""
             QPushButton {
@@ -114,10 +114,14 @@ class ButtonsUI(QWidget):
             QPushButton:hover {
                 background-color: #45a049;
             }
+            QPushButton:disabled {
+                background-color: #cccccc;
+                color: #666666;
+            }
         """)
         self.results_button.setFixedSize(120, 35)
+        self.results_button.setEnabled(False)  # Anfangs deaktiviert
         middle_layout.addWidget(self.results_button)
-        self.results_button.hide()  # Initial verstecken
         
         # Mittleren Bereich zum Hauptlayout hinzufügen
         self.layout.addWidget(middle_widget)
@@ -139,8 +143,9 @@ class ButtonsUI(QWidget):
                 window.countdown.show_initial_time()
     
     def show_results_button(self):
-        """Zeigt den Ergebnis-Button an."""
-        self.results_button.show()
+        """Aktiviert den Ergebnis-Button."""
+        # Button aktivieren und Click-Handler anbinden
+        self.results_button.setEnabled(True)
         self.results_button.clicked.connect(self.open_results_window)
 
     def open_results_window(self):
@@ -159,3 +164,11 @@ class ButtonsUI(QWidget):
         """Zeigt das Highscore-Fenster an"""
         highscores_dialog = HighscoresWindow(self.highscore_model, self.window())
         highscores_dialog.exec()
+        
+    def restart_game(self):
+        """Startet das Spiel neu"""
+        window = self.window()
+        if hasattr(window, 'reset_for_new_test'):
+            window.reset_for_new_test()
+            # Optional: Bestätigungsdialog
+            print("Spiel wurde neu gestartet")

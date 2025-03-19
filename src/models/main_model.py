@@ -48,6 +48,8 @@ class MainModel:
         """Setzt den Timer zurück."""
         self.time_remaining = self.timer_duration
         self.timer_active = False
+        # Wörter-Zähler zurücksetzen, um Liste bei Neustart wieder zu verwenden
+        self.words_count = 0
     
     def update_timer(self):
         """
@@ -116,11 +118,8 @@ class MainModel:
             self.used_words = []
             random.shuffle(self.all_words)
         
-        # Wörter aus all_words nehmen und zu used_words hinzufügen
+        # Entferne die max_words-Beschränkung, damit die Wörter zyklisch verwendet werden
         for _ in range(min(words_needed, len(self.all_words))):
-            if self.words_count >= self.max_words:
-                break  # Maximale Wortanzahl erreicht
-                
             word = self.all_words.pop(0)
             result.append(word)
             self.used_words.append(word)
