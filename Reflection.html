@@ -1,0 +1,143 @@
+<div class="reflection-container">
+    <h2>Reflection on the Typing Test Application Project</h2>
+    
+    <section class="approach">
+      <h3>My Approach</h3>
+      <p>
+        I approached this project with a clear focus on Object-Oriented Programming principles. Starting with a thorough domain analysis, I identified key components like the timer system, text generation, and input tracking. I structured the application using the MVC pattern to ensure clean separation between data models, UI components, and application logic.
+      </p>
+      <p>
+        Rather than rushing to implement features, I spent significant time planning the class structure and interfaces. This upfront investment paid off during implementation, allowing me to build components that interacted seamlessly through well-defined interfaces.
+      </p>
+      <p>
+        One of my core design decisions was separating the text processing logic from the UI components. This proved invaluable as it allowed me to independently test text comparison algorithms, scoring mechanisms, and statistical calculations without depending on the GUI implementation. The MainModel, StatisticsModel, and HighscoreModel classes formed the backbone of the application's logic layer.
+      </p>
+      <p>
+        For the user interface, I utilized PyQt6's powerful component system to create a responsive and intuitive interface. The layout was designed to keep the typing area central to the user's focus while providing easy access to key information like timing, keystroke count, and real-time feedback.
+      </p>
+    </section>
+    
+    <section class="challenges">
+      <h3>Challenges Faced</h3>
+      <p>
+        The most challenging aspect was implementing real-time text comparison with proper highlighting. Creating a system that accurately tracked keystrokes while distinguishing between character errors, capitalization errors, and similar characters (like umlauts) required careful consideration. I had to revise the comparison algorithm several times to ensure it handled edge cases like multi-byte characters and special punctuation properly.
+      </p>
+      <p>
+        Another significant challenge was managing the application state during test restarts. Ensuring that all components reset properly without introducing side effects proved more complex than anticipated. Particularly, the interaction between timer signals and UI updates required meticulous attention to prevent race conditions. The solution involved implementing a state machine pattern to control transitions between different application states (idle, typing, finished) and ensure consistent behavior.
+      </p>
+      <p>
+        The scoring algorithm was also challenging to get right. Balancing difficulty across different test durations while accounting for corrections, accuracy, and consistency demanded both mathematical thinking and user experience considerations. I spent considerable time tweaking the bonus point system to reward skilled typing without making it too easy or too difficult to achieve high scores.
+      </p>
+      <p>
+        Filtering keystrokes to only count character-producing keys while still tracking other relevant inputs like backspaces and escape key usage presented unique challenges with Qt's event system. Creating a robust key event handler that properly differentiated between modifier keys, navigation keys, and character keys required deep understanding of the keyboard input mechanisms.
+      </p>
+    </section>
+    
+    <section class="successes">
+      <h3>What Worked Well</h3>
+      <p>
+        The PyQt6 framework provided excellent tools for building the UI. The signal-slot mechanism was particularly effective for decoupling components and maintaining responsive feedback during typing tests. This architecture allowed me to create loosely coupled components that could communicate effectively without creating tight dependencies.
+      </p>
+      <p>
+        The statistics tracking system worked impressively well, providing detailed metrics without noticeably impacting performance. Breaking the keystroke tracking into different categories (correct, case errors, wrong characters, backspaces) gave users meaningful feedback about their typing patterns. The error rate calculation proved especially valuable as it provided users with a clear metric of their accuracy.
+      </p>
+      <p>
+        The color-coding system for feedback during typing provided intuitive, real-time guidance that users could easily interpret without being distracted from their typing flow. The visual distinction between correct (green), capitalization errors (yellow), and wrong characters (red) gave immediate feedback that helped users identify their most common mistakes.
+      </p>
+      <p>
+        The implemention of the menu bar with options for restarting, viewing highscores, and accessing help significantly improved the application's usability. Particularly the help section with scoring rules made the system transparent to users, enhancing their engagement with the scoring mechanism.
+      </p>
+    </section>
+    
+    <section class="improvements">
+      <h3>Future Improvements</h3>
+      <p>
+        For future projects, I would prioritize test-driven development more rigorously. While I did write tests, they often came after implementation rather than before. This led to some refactoring that could have been avoided with a stricter TDD approach. Beginning with comprehensive unit tests would have caught edge cases earlier in the development cycle.
+      </p>
+      <p>
+        I would also invest in more formal requirements gathering and documentation before starting implementation. While the OOP design was solid, some feature requirements evolved during development, leading to occasional architectural adjustments. A more thorough initial specification would have reduced these mid-course corrections.
+      </p>
+      <p>
+        Looking ahead, I would enhance the application with several major feature additions:
+      </p>
+      <ul>
+        <li>
+          <strong>Custom Text Import:</strong> A feature to allow users to import their own text files or paste content directly. This would dramatically expand the utility of the application, especially for users practicing specific types of writing or technical terminology.
+        </li>
+        <li>
+          <strong>User Profiles:</strong> Implementing a profile system would allow multiple users to track their progress independently. Each profile would maintain its own history, statistics, and preferences, making the application suitable for shared environments or classroom settings.
+        </li>
+        <li>
+          <strong>Difficulty Levels:</strong> Adding options to adjust text complexity (easy/medium/hard) would make the application accessible to beginners while still challenging advanced typists. This could be implemented by analyzing text for vocabulary complexity, sentence length, and presence of specialized characters.
+        </li>
+        <li>
+          <strong>Specialized Training Modes:</strong> Creating focused practice modes like "Numbers Only," "Special Characters," or "Programming Syntax" would help users target specific weaknesses in their typing skills. Each mode would have customized text generation algorithms and scoring mechanisms.
+        </li>
+        <li>
+          <strong>Statistical Dashboard:</strong> Developing a comprehensive visualization system with charts and graphs to track progress over time would give users deeper insights into their improvement. Metrics like speed trends, error patterns, and performance comparisons would motivate continued practice.
+        </li>
+        <li>
+          <strong>Text Categories:</strong> Organizing texts by themes, languages, or genres would allow users to practice typing in contexts relevant to their needs. For example, legal professionals could practice with legal documents, while programmers could practice with code snippets.
+        </li>
+        <li>
+          <strong>Customizable UI:</strong> Providing options for themes, font sizes, and layout configurations would improve accessibility and user satisfaction. Dark mode, high-contrast options, and adjustable text spacing would accommodate different visual preferences and needs.
+        </li>
+      </ul>
+    </section>
+    
+    <section class="learnings">
+      <h3>Key Takeaways</h3>
+      <p>
+        The most significant learning was about effective state management in a complex GUI application. Understanding how to structure the application to maintain consistent state across components that update at different rates was invaluable. The careful application of the observer pattern through Qt's signal-slot mechanism proved essential in maintaining application consistency.
+      </p>
+      <p>
+        I also gained deeper insight into how small UX details significantly impact user satisfaction. For example, the implementation of highlighting text as users typed evolved from a nice-to-have feature to a central component of the application's value proposition. Similarly, the color scheme of the interface and the positioning of key information dramatically affected how users interacted with the application.
+      </p>
+      <p>
+        Working with timer events and threading in GUI applications revealed important lessons about performance optimization. Ensuring smooth UI updates while processing text input and calculating statistics required careful attention to event handling and asynchronous processing. I learned to avoid blocking operations in the UI thread and to prioritize responsive user interaction.
+      </p>
+      <p>
+        Finally, I learned that even in a relatively straightforward application like a typing test, the complexity of edge cases can grow exponentially. Handling scenarios like users pressing specific key combinations, attempting to reset during an active test, or dealing with unexpected text formats required robust error handling and thorough testing. Building resilience into the application architecture from the beginning proved more effective than adding error handling as an afterthought.
+      </p>
+    </section>
+    
+    <section class="do-differently">
+      <h3>What I Would Do Differently</h3>
+      <p>
+        If starting over, I would adopt a more iterative development cycle, releasing smaller functional increments more frequently for testing. This would have helped identify usability issues earlier and adapted the design accordingly. A phased approach with clear milestones would have allowed for more targeted user feedback at critical development stages.
+      </p>
+      <p>
+        I would invest more time in creating a comprehensive test suite covering all key functionality before implementing the UI. This would have provided more confidence during refactoring and feature addition. Particularly for the text comparison and scoring algorithms, having robust unit tests would have prevented several bugs that emerged during integration.
+      </p>
+      <p>
+        I would also implement a plugin architecture from the start to make the application more extensible. This would make adding features like custom text import, additional test types, or new scoring algorithms much easier without modifying core functionality. With a plugin system, users and developers could extend the application's capabilities without requiring changes to the base code.
+      </p>
+      <p>
+        For the user profiles feature, I would design a proper database architecture rather than relying solely on JSON files. Using SQLite or another embedded database would provide better performance for querying historical data and enable more sophisticated statistical analysis across multiple typing sessions.
+      </p>
+      <p>
+        The difficulty level system would be built into the core architecture rather than added as an afterthought. By designing the text generation engine to consider factors like vocabulary complexity, sentence structure, and special character frequency from the beginning, the application could offer a more tailored experience to users at different skill levels.
+      </p>
+      <p>
+        For the customizable interface, I would implement a theme engine using CSS-like styling that could be easily modified without changing the underlying code. This would allow for rapid UI customization and potentially enable users to create and share their own themes and layout preferences.
+      </p>
+      <p>
+        The statistics dashboard would be designed with data visualization best practices in mind from the start, using a charting library that could scale with increasing amounts of historical data. I would separate the data collection and analysis logic from the visualization components to allow for future extensions to the metrics being tracked.
+      </p>
+      <p>
+        Overall, while the current implementation is functional and well-structured, these changes would have resulted in an application with greater longevity, extensibility, and user satisfaction. The lessons learned from this project will be invaluable for future software development efforts, particularly those involving interactive user interfaces and real-time feedback systems.
+      </p>
+    </section>
+    
+    <section class="project-resources">
+      <h3>Project Resources</h3>
+      <p>
+        The complete source code for this project is available on GitHub: 
+        <a href="https://github.com/DannyWhyze/TypingInputTest" target="_blank">https://github.com/DannyWhyze/TypingInputTest</a>
+      </p>
+      <div class="screenshot">
+        <h4>Application Screenshot</h4>
+        <img src="Screenshot 2025-03-19 195532.jpg" alt="Typing Test Application Screenshot" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+      </div>
+    </section>
+  </div>

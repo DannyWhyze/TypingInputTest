@@ -79,9 +79,22 @@ class ApplicationMenuBar(QMenuBar):
         edit_menu.addAction(clear_highscores_action)
     
     def create_help_menu(self):
-        """Erstellt das Help-Menü (vorerst leer)"""
-        self.addMenu("&Help")
-    
+        """Erstellt das Help-Menü mit Punkteregeln und About-Infos"""
+        help_menu = self.addMenu("&Help")
+        
+        # Punkteregeln-Aktion
+        rules_action = QAction("Regeln der Punktevergabe", self)
+        rules_action.triggered.connect(self.show_score_rules)
+        help_menu.addAction(rules_action)
+        
+        # Trenner
+        help_menu.addSeparator()
+        
+        # About-Aktion
+        about_action = QAction("About", self)
+        about_action.triggered.connect(self.show_about)
+        help_menu.addAction(about_action)
+
     def show_highscores(self):
         """Zeigt das Highscore-Fenster an"""
         # Highscore-Model von ButtonsUI verwenden, falls bereits initialisiert
@@ -119,3 +132,94 @@ class ApplicationMenuBar(QMenuBar):
         """Startet das Spiel neu"""
         if hasattr(self.parent, 'reset_for_new_test'):
             self.parent.reset_for_new_test()
+
+    def show_score_rules(self):
+        """Zeigt ein Dialogfenster mit den Regeln der Punktevergabe"""
+        rules_text = """
+        <h2>Regeln der Punktevergabe</h2>
+        
+        <h3>Basispunkte:</h3>
+        <ul>
+            <li>+1 Punkt für jeden korrekt getippten Buchstaben (grün)</li>
+        </ul>
+        
+        <h3>Abzüge:</h3>
+        <ul>
+            <li>-1 Punkt für jedes halb-richtige Wort (gelb)</li>
+            <li>-2 Punkte für jedes falsche Wort (rot)</li>
+            <li>-2 Punkte für jedes Wort mit gemischten Fehlern (gelb und rot)</li>
+            <li>-1 Punkt pro Backspace</li>
+        </ul>
+        
+        <h3>Boni:</h3>
+        <ul>
+            <li>+0,5 Punkte pro erfolgreiche Korrektur</li>
+            <li>+50 Punkte für 10 fehlerfreie Wörter in Folge</li>
+            <li>Geschwindigkeitsbonus:
+                <ul>
+                    <li>+100 Punkte bei 60+ Anschlägen pro Minute</li>
+                    <li>+250 Punkte bei 80+ Anschlägen pro Minute</li>
+                    <li>+500 Punkte bei 100+ Anschlägen pro Minute</li>
+                </ul>
+            </li>
+            <li>+200 Punkte für gleichmäßiges Tippen</li>
+        </ul>
+        
+        <h3>Schwierigkeitsgrade:</h3>
+        <ul>
+            <li>1-Minute-Test: Faktor 1.0</li>
+            <li>3-Minuten-Test: Faktor 1.1</li>
+            <li>5-Minuten-Test: Faktor 1.2</li>
+        </ul>
+
+        <h3>Nicht gezählte Tasten:</h3>
+        <p>Folgende Tasten werden nicht als Anschläge gezählt:</p>
+        <ul>
+            <li><strong>Modifiziertasten:</strong> Shift, Strg (Ctrl), Alt, AltGr, Caps Lock, Windows-Taste, Fn</li>
+            <li><strong>Enter/Return:</strong> Erzeugt zwar einen Zeilenumbruch, zählt aber nicht als Anschlag</li>
+            <li><strong>Navigationstasten:</strong> Pfeiltasten (links, rechts, oben, unten), Tab</li>
+            <li><strong>Escape:</strong> Wird separat erfasst, aber nicht als Anschlag gezählt</li>
+            <li><strong>Backspace und Delete:</strong> Werden als Korrekturen gezählt, nicht als Anschläge</li>
+        </ul>
+        """
+        
+        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QTextBrowser
+        from PyQt6.QtCore import Qt
+        
+        dialog = QDialog(self.parent)
+        dialog.setWindowTitle("Regeln der Punktevergabe")
+        dialog.setMinimumSize(500, 650)  # Etwas größer für den zusätzlichen Inhalt
+        
+        layout = QVBoxLayout(dialog)
+        text_browser = QTextBrowser()
+        text_browser.setHtml(rules_text)
+        text_browser.setOpenExternalLinks(True)
+        layout.addWidget(text_browser)
+        
+        dialog.exec()
+
+    def show_about(self):
+        """Zeigt ein Dialogfenster mit About-Informationen"""
+        about_text = """
+        <div style="text-align: center; margin: 20px;">
+            <h2>Typing Test</h2>
+            <h3>Version 1.0</h3>
+            <p>Entwickelt von: Danny Whyze</p>
+            <p>Organisation: Bars2Bars</p>
+        </div>
+        """
+        
+        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QTextBrowser
+        from PyQt6.QtCore import Qt
+        
+        dialog = QDialog(self.parent)
+        dialog.setWindowTitle("About")
+        dialog.setFixedSize(300, 200)
+        
+        layout = QVBoxLayout(dialog)
+        text_browser = QTextBrowser()
+        text_browser.setHtml(about_text)
+        text_browser.setOpenExternalLinks(True)
+        layout.addWidget(text_browser)
+        
+        dialog.exec()
