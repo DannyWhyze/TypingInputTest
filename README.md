@@ -97,6 +97,8 @@ Bonus Points System: Earn additional points for sequences of error-free words, h
 
 To run the tests, use the following command:
 
+pytest test_statistics.py -v --color=yes
+
 # Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
