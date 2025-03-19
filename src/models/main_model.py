@@ -1,11 +1,26 @@
+import os
+import random
+
 class MainModel:
     def __init__(self):        
         self.keystroke_count = 0  # Zählt die Tastenanschläge
+        self.elapsed_time = 0     # Verstrichene Zeit in Sekunden seit Beginn der Eingabe
         
         # Timer-Attribute
         self.timer_duration = 0  # Dauer in Sekunden (0, 60, 180, 300)
         self.time_remaining = 0  # Verbleibende Zeit in Sekunden
         self.timer_active = False  # Gibt an, ob der Timer aktiv ist
+        
+        # Wortliste-Attribute
+        self.all_words = []       # Alle verfügbaren Wörter
+        self.used_words = []      # Bereits verwendete Wörter
+        self.current_text = ""    # Aktueller zu tippender Text
+        self.typed_correctly = 0  # Anzahl korrekt getippter Zeichen
+        self.max_words = 1000     # Maximale Anzahl zu verwendender Wörter
+        self.words_count = 0      # Zähler für bereits verwendete Wörter
+        
+        # Wortliste laden
+        self.load_word_list()
     
     def increment_keystrokes(self):
         self.keystroke_count += 1
@@ -44,13 +59,96 @@ class MainModel:
             
         if self.time_remaining > 0:
             self.time_remaining -= 1
+            # Zeit aktualisieren
+            self.elapsed_time = self.timer_duration - self.time_remaining
             return True
         else:
             self.timer_active = False
             return False
+    
+    def get_keystrokes_per_second(self):
+        """Berechnet die Anschläge pro Sekunde."""
+        if self.timer_active and self.elapsed_time > 0:
+            # Berechnung der verstrichenen Zeit
+            self.elapsed_time = self.timer_duration - self.time_remaining
+            # Anschläge durch verstrichene Zeit
+            return round(self.keystroke_count / self.elapsed_time, 1)
+        return 0.0
     
     def get_time_remaining_str(self):
         """Gibt die verbleibende Zeit als formatierte Zeichenkette zurück (MM:SS)."""
         minutes = self.time_remaining // 60
         seconds = self.time_remaining % 60
         return f"{minutes:02d}:{seconds:02d}"
+    
+    def load_word_list(self, file_path=None):
+        """Lädt die Wortliste aus einer Datei."""
+        if file_path is None:
+            file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
+                                    'ressources', 'wortschatzGrund1.txt')
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                # Wörter laden und leere Zeilen sowie Kommentare filtern
+                self.all_words = [word.strip() for word in file.readlines() 
+                                 if word.strip() and not word.strip().startswith('//')]
+            
+            # Wortliste mischen
+            random.shuffle(self.all_words)
+            
+        except Exception as e:
+            print(f"Fehler beim Laden der Wortliste: {e}")
+            # Fallback: Leere Liste
+            self.all_words = []
+    
+    def get_next_words(self, count=20):
+        """Gibt die nächsten 'count' Wörter zurück."""
+        if not self.all_words and not self.used_words:
+            return []  # Keine Wörter verfügbar
+            
+        words_needed = count
+        result = []
+        
+        # Wenn nicht genug Wörter in all_words, used_words wiederverwenden
+        if len(self.all_words) < words_needed:
+            # Used words wiederverwenden, wenn alle Wörter verbraucht sind
+            self.all_words.extend(self.used_words)
+            self.used_words = []
+            random.shuffle(self.all_words)
+        
+        # Wörter aus all_words nehmen und zu used_words hinzufügen
+        for _ in range(min(words_needed, len(self.all_words))):
+            if self.words_count >= self.max_words:
+                break  # Maximale Wortanzahl erreicht
+                
+            word = self.all_words.pop(0)
+            result.append(word)
+            self.used_words.append(word)
+            self.words_count += 1
+            
+        return result
+    
+    def generate_text_for_typing(self, words_count=20):
+        """Generiert einen Text zum Abtippen."""
+        words = self.get_next_words(words_count)
+        if not words:
+            return ""
+            
+        # Text mit Leerzeichen zwischen den Wörtern generieren
+        self.current_text = " ".join(words)
+        self.typed_correctly = 0  # Reset der korrekten Zeichen
+        return self.current_text
+    
+    def check_typing(self, typed_text):
+        """
+        Überprüft den eingegebenen Text und gibt zurück, wie viele Zeichen korrekt sind.
+        """
+        correct_count = 0
+        for i, (target_char, typed_char) in enumerate(zip(self.current_text, typed_text)):
+            if target_char == typed_char:
+                correct_count += 1
+            else:
+                break  # Bei erstem Fehler abbrechen
+                
+        self.typed_correctly = correct_count
+        return correct_count

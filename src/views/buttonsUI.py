@@ -57,7 +57,7 @@ class ButtonsUI(QWidget):
         self.tip_info = TipInfo(self.model)
         self.layout.addWidget(self.tip_info)
 
-        self.setFixedWidth(420)
+        self.setFixedWidth(520)  # Erhöht von 420 auf 520 für breiteres TipInfo-Widget
         
     def set_timer_minutes(self, minutes):
         """

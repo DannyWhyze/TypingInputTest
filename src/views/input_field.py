@@ -2,13 +2,15 @@ from PyQt6.QtWidgets import QTextEdit, QWidget, QVBoxLayout
 from PyQt6.QtCore import pyqtSignal
 
 class InputField(QWidget):
-    def __init__(self, model, placeholder_text="Enter your text here"):
+    def __init__(self, model, target_text_widget, placeholder_text="Tippe den obigen Text ab..."):
         """
         Erstellt ein Widget mit einem größeren Textfeld (Multiline).
         :param placeholder_text: Platzhaltertext für das Textfeld.
         """
         super().__init__()
         self.model = model  # Verweis auf MainModel
+        self.target_text_widget = target_text_widget
+        
         self.layout = QVBoxLayout(self)
         # Keine Abstände im Layout
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -17,8 +19,14 @@ class InputField(QWidget):
         # Erstelle ein QTextEdit (Multiline-Textfeld)
         self.text_edit = QTextEdit()
         self.text_edit.setPlaceholderText(placeholder_text)
-        self.text_edit.setStyleSheet("font-size: 14px; padding: 5px;")
-        self.text_edit.setFixedHeight(100)  # Höhe für ca. 4 Zeilen Text
+        self.text_edit.setStyleSheet("""
+            QTextEdit {
+                font-size: 16px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+        """)
         self.layout.addWidget(self.text_edit)
 
         # Signal anbinden
@@ -31,18 +39,23 @@ class InputField(QWidget):
 
     def on_text_changed(self):
         """Diese Methode wird bei jeder Textänderung aufgerufen"""
-        self.model.increment_keystrokes()
-        
-        # MainWindow finden
-        window = self.window()
-        
-        # Timer starten beim ersten Tastendruck, wenn Timer vorbereitet ist
-        if self.model.timer_duration > 0 and not self.model.timer_active:
-            self.model.start_timer()  # Jetzt erst aktivieren
+        if not self.countdown_started and self.model.timer_duration > 0:
+            self.countdown_started = True
+            self.model.start_timer()
+            window = self.window()
             if hasattr(window, 'countdown'):
                 window.countdown.start_timer()
         
-        # Tippinfo aktualisieren
+        # Tastenanschläge zählen
+        self.model.increment_keystrokes()
+        
+        # Eingabe mit dem Zieltext vergleichen und farblich markieren
+        typed_text = self.text_edit.toPlainText()
+        correct_count = self.model.check_typing(typed_text)
+        self.target_text_widget.update_colored_text(correct_count)
+        
+        # Aktualisiere andere Widgets
+        window = self.window()
         if hasattr(window, 'buttons') and hasattr(window.buttons, 'tip_info'):
             window.buttons.tip_info.update_info()
 
