@@ -53,11 +53,42 @@ class HighscoresWindow(QDialog):
             "Datum"
         ])
         
+        # Wichtig: Grid-Linien für alle Zellen aktivieren
+        self.table.setShowGrid(True)
+        
         # Höhe der Header-Zeile vergrößern für mehrzeilige Beschriftungen
         self.table.horizontalHeader().setMinimumHeight(45)
         
         # Spaltenbreiten anpassen und Tabelle konfigurieren
         self.table.horizontalHeader().setStretchLastSection(True)
+        
+        # Vertikale Header ausblenden (Diese können Verwirrung stiften)
+        self.table.verticalHeader().setVisible(False)
+        
+        # Stil für die Tabelle
+        self.table.setStyleSheet("""
+            QTableWidget {
+                gridline-color: #c0c0c0;
+                background-color: white;
+                border: 1px solid #c0c0c0;
+                border-radius: 0px;
+                font-size: 14px;
+            }
+            QTableWidget::item {
+                border-color: #c0c0c0;
+                padding: 5px;
+            }
+            QHeaderView::section {
+                background-color: #f0f0f0;
+                padding: 5px;
+                border: 1px solid #c0c0c0;
+                font-weight: bold;
+            }
+        """)
+        
+        # Gesamte Zeile auswählen statt einzelner Zellen
+        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        
         self.layout.addWidget(self.table)
         
         # Schließen-Button
