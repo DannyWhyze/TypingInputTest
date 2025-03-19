@@ -113,6 +113,9 @@ class ResultsWindow(QDialog):
         
         # Gesamtpunktzahl
         score = self.statistics_model.calculate_score(typed_text)
+        
+        # Fehlerquote berechnen - NEU
+        error_rate = self.statistics_model.calculate_error_rate()
 
         # Ergebniscontainer
         results_layout = QVBoxLayout()
@@ -122,6 +125,7 @@ class ResultsWindow(QDialog):
             ("Gesamte Tastenanschläge:", f"{keystroke_count}"),
             ("Zeit:", f"{int(time_in_minutes)} Minute(n)"),
             ("Anschläge pro Minute:", f"{keystrokes_per_minute}"),
+            ("Fehlerquote:", f"{error_rate}%"),  # NEU: Fehlerquote anzeigen
             ("Grundpunkte:", f"{base_points}"),
             ("Sequenz-Bonus:", f"{sequence_bonus}"),
             ("Geschwindigkeits-Bonus:", f"{speed_bonus}"),

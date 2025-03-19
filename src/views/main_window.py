@@ -6,18 +6,20 @@ from src.views.input_field import InputField
 from src.views.countdown import CountdownWidget
 from src.views.textinfos import TextInfo
 from src.views.target_text_widget import TargetTextWidget
+from src.views.menu_bar import ApplicationMenuBar  # Importiere die neue Menüleistenklasse
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Main Window")
-        self.setGeometry(100, 100, 800, 600)
-        
-        # Model erzeugen
+        self.setWindowTitle("Tipptraining")
         self.model = MainModel()
         # StatisticsModel zentral erstellen
         from src.models.statisticsModel import StatisticsModel
         self.stats_model = StatisticsModel(self.model)
+        
+        # Menüleiste einrichten (vor initUI)
+        self.menu_bar = ApplicationMenuBar(self)
+        self.setMenuBar(self.menu_bar)
         
         self.initUI()
 
