@@ -1,5 +1,43 @@
 from PyQt6.QtWidgets import QTextEdit
-from PyQt6.QtGui import QTextCharFormat, QColor, QTextCursor
+from PyQt6.QtGui import QTextCharFormat, QColor, QSyntaxHighlighter
+from PyQt6.QtCore import Qt
+
+class TypingHighlighter(QSyntaxHighlighter):
+    def __init__(self, document, model):
+        super().__init__(document)
+        self.model = model
+        self.status_list = []
+        
+    def set_status_list(self, status_list):
+        """Aktualisiert die Status-Liste und triggert Neuformatierung"""
+        self.status_list = status_list
+        self.rehighlight()  # Löst Neuformatierung aus
+        
+    def get_format(self, color):
+        """Erstellt ein QTextCharFormat mit der angegebenen Farbe"""
+        text_format = QTextCharFormat()
+        text_format.setForeground(QColor(color))
+        return text_format
+        
+    def highlightBlock(self, text):
+        """Formatiert den aktuellen Textblock"""
+        # Diese Methode wird automatisch für sichtbare Textblöcke aufgerufen
+        start_pos = self.currentBlock().position()
+        
+        # Formatierungen für verschiedene Status vorbereiten
+        formats = [
+            QTextCharFormat(),              # Schwarz (noch nicht getippt)
+            self.get_format("green"),       # Grün (korrekt)
+            self.get_format("orange"),      # Orange (halb-richtig)
+            self.get_format("red")          # Rot (falsch)
+        ]
+        
+        # Nur Zeichen formatieren, für die ein Status existiert
+        for i, char in enumerate(text):
+            pos = start_pos + i
+            if pos < len(self.status_list):
+                self.setFormat(i, 1, formats[self.status_list[pos]])
+
 
 class TargetTextWidget(QTextEdit):
     def __init__(self, model):
@@ -18,59 +56,24 @@ class TargetTextWidget(QTextEdit):
             }
         """)
         
+        # Syntax-Highlighter initialisieren
+        self.highlighter = TypingHighlighter(self.document(), self.model)
+        
         # Initial Text generieren
         self.refresh_text()
         
     def refresh_text(self):
         """Generiert neuen Text und zeigt ihn an."""
-        text = self.model.generate_text_for_typing(200)  # Statt Standardwert (20) explizit 100 Wörter anfordern
+        text = self.model.generate_text_for_typing(200)  # 200 Wörter anfordern
         self.setPlainText(text)
     
     def update_colored_text(self, status_list):
         """
-        Aktualisiert den Text mit Farbformatierung:
-        - Grün: Korrekt getippte Zeichen
-        - Gelb: Falsche Groß-/Kleinschreibung
-        - Rot: Falsche Buchstaben
+        Aktualisiert die Textformatierung basierend auf der Status-Liste
+        Verwendet den Highlighter für effiziente Formatierung
         """
-        # Formatierungen definieren
-        correct_format = QTextCharFormat()
-        correct_format.setForeground(QColor("green"))
-        
-        case_format = QTextCharFormat()
-        case_format.setForeground(QColor("orange"))  # Gelb/Orange für Groß-/Kleinschreibungsfehler
-        
-        error_format = QTextCharFormat()
-        error_format.setForeground(QColor("red"))
-        
-        normal_format = QTextCharFormat()
-        normal_format.setForeground(QColor("black"))
-        
-        # Text formatieren
-        cursor = self.textCursor()
-        
-        # Zuerst alles auf normale Formatierung setzen
-        cursor.setPosition(0)
-        cursor.movePosition(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.KeepAnchor)
-        cursor.setCharFormat(normal_format)
-        
-        # Dann jedes Zeichen entsprechend formatieren
-        text = self.toPlainText()
-        
-        for i, status in enumerate(status_list):
-            if i >= len(text):
-                break
-                
-            cursor.setPosition(i)
-            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, 1)
-            
-            if status == 1:  # Korrekt
-                cursor.setCharFormat(correct_format)
-            elif status == 2:  # Falsche Groß-/Kleinschreibung
-                cursor.setCharFormat(case_format)
-            elif status == 3:  # Falscher Buchstabe
-                cursor.setCharFormat(error_format)
-            # Status 0 bleibt schwarz (unformatiert)
+        # Status-Liste im Highlighter aktualisieren
+        self.highlighter.set_status_list(status_list)
         
         # Auto-Scrolling
         correct_count = status_list.count(1)  # Anzahl korrekter Zeichen für Scrolling
