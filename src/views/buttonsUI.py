@@ -27,34 +27,50 @@ class ButtonsUI(QWidget):
         left_layout.setSpacing(0)
         left_layout.setContentsMargins(0, 0, 0, 0)
         
-        button_style = """
-        QPushButton {
-            margin: 0;
-            padding: 0;
-            border: 1px solid #888;
-        }
+        # Gemeinsamer Stylesheet für Zeitbuttons
+        self.normal_time_style = """
+            QPushButton {
+                margin: 0;
+                padding: 0;
+                border: 1px solid #888;
+                background-color: none;
+            }
+            QPushButton:hover {
+                background-color: #e0e0e0;
+            }
+        """
+        self.selected_time_style = """
+            QPushButton {
+                margin: 0;
+                padding: 0;
+                border: 1px solid #888;
+                background-color: #ffeb3b; /* Gelb */
+            }
         """
 
         # Button "1" mit Click-Handler
         self.button1 = QPushButton("1")
         self.button1.setFixedSize(50, 30)
-        self.button1.setStyleSheet(button_style)
-        self.button1.clicked.connect(lambda: self.set_timer_minutes(1))
+        self.button1.setStyleSheet(self.normal_time_style)
+        self.button1.clicked.connect(lambda: self.select_time_button(self.button1, 1))
         left_layout.addWidget(self.button1)
 
         # Button "3" mit Click-Handler
         self.button3 = QPushButton("3")
         self.button3.setFixedSize(50, 30)
-        self.button3.setStyleSheet(button_style)
-        self.button3.clicked.connect(lambda: self.set_timer_minutes(3))
+        self.button3.setStyleSheet(self.normal_time_style)
+        self.button3.clicked.connect(lambda: self.select_time_button(self.button3, 3))
         left_layout.addWidget(self.button3)
 
         # Button "5" mit Click-Handler
         self.button5 = QPushButton("5")
         self.button5.setFixedSize(50, 30)
-        self.button5.setStyleSheet(button_style)
-        self.button5.clicked.connect(lambda: self.set_timer_minutes(5))
+        self.button5.setStyleSheet(self.normal_time_style)
+        self.button5.clicked.connect(lambda: self.select_time_button(self.button5, 5))
         left_layout.addWidget(self.button5)
+
+        # Speichere die Zeit-Buttons in einer Liste für spätere Verwendung
+        self.time_buttons = [self.button1, self.button3, self.button5]
 
         left_layout.addSpacing(5)
 
@@ -172,3 +188,20 @@ class ButtonsUI(QWidget):
             window.reset_for_new_test()
             # Optional: Bestätigungsdialog
             print("Spiel wurde neu gestartet")
+
+    def select_time_button(self, selected_button, minutes):
+        """
+        Setzt den Stil der Zeit-Buttons so, dass der ausgewählte Button gelb erscheint.
+        Ruft außerdem set_timer(minutes) im Model auf.
+        """
+        # Setze alle Buttons auf normalen Stil
+        for btn in self.time_buttons:
+            btn.setStyleSheet(self.normal_time_style)
+        # Setze den ausgewählten Button auf den gewählten Stil (gelb)
+        selected_button.setStyleSheet(self.selected_time_style)
+        # Setze den Timer im Model
+        if self.model.set_timer(minutes):
+            print(f"Timer auf {minutes} Minute(n) gesetzt und wartet auf Tippbeginn.")
+            window = self.window()
+            if hasattr(window, 'countdown'):
+                window.countdown.show_initial_time()

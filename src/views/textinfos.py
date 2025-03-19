@@ -34,5 +34,9 @@ class TextInfo(QWidget):
             }
         """)
         
+        # Mindestgröße anpassen, damit der Text komplett angezeigt wird
+        self.setMinimumWidth(400)
+        self.setMinimumHeight(120)
+        
         # Label zum Layout hinzufügen
         self.layout.addWidget(self.info_label)

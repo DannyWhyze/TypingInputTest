@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         
         # TextInfo-Widget hinzufügen (zwischen Buttons und Input-Area)
         self.text_info = TextInfo()
-        main_layout.addWidget(self.text_info)
+        main_layout.addWidget(self.text_info, alignment=Qt.AlignmentFlag.AlignCenter)
         
         # Zieltext-Widget (zu tippender Text)
         self.target_text = TargetTextWidget(self.model)
