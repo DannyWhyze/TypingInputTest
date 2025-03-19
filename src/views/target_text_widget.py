@@ -26,35 +26,55 @@ class TargetTextWidget(QTextEdit):
         text = self.model.generate_text_for_typing(200)  # Statt Standardwert (20) explizit 100 Wörter anfordern
         self.setPlainText(text)
     
-    def update_colored_text(self, correct_count):
+    def update_colored_text(self, status_list):
         """
-        Aktualisiert den Text und markiert die korrekten Zeichen grün.
-        Scrollt automatisch, wenn 75% des sichtbaren Textes getippt wurden.
+        Aktualisiert den Text mit Farbformatierung:
+        - Grün: Korrekt getippte Zeichen
+        - Gelb: Falsche Groß-/Kleinschreibung
+        - Rot: Falsche Buchstaben
         """
-        # Formatierung für korrekte Zeichen
+        # Formatierungen definieren
         correct_format = QTextCharFormat()
         correct_format.setForeground(QColor("green"))
         
-        # Formatierung für noch nicht getippte Zeichen
+        case_format = QTextCharFormat()
+        case_format.setForeground(QColor("orange"))  # Gelb/Orange für Groß-/Kleinschreibungsfehler
+        
+        error_format = QTextCharFormat()
+        error_format.setForeground(QColor("red"))
+        
         normal_format = QTextCharFormat()
         normal_format.setForeground(QColor("black"))
         
-        # Text setzen und Cursor positionieren
+        # Text formatieren
         cursor = self.textCursor()
-        cursor.setPosition(0)
         
-        # Zuerst den gesamten Text auf normale Formatierung setzen
+        # Zuerst alles auf normale Formatierung setzen
+        cursor.setPosition(0)
         cursor.movePosition(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.KeepAnchor)
         cursor.setCharFormat(normal_format)
         
-        # Dann die korrekten Zeichen grün markieren
-        if correct_count > 0:
-            cursor.setPosition(0)
-            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, correct_count)
-            cursor.setCharFormat(correct_format)
+        # Dann jedes Zeichen entsprechend formatieren
+        text = self.toPlainText()
+        
+        for i, status in enumerate(status_list):
+            if i >= len(text):
+                break
+                
+            cursor.setPosition(i)
+            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, 1)
             
-            # Auto-Scrolling implementieren
-            self.check_and_scroll(correct_count)
+            if status == 1:  # Korrekt
+                cursor.setCharFormat(correct_format)
+            elif status == 2:  # Falsche Groß-/Kleinschreibung
+                cursor.setCharFormat(case_format)
+            elif status == 3:  # Falscher Buchstabe
+                cursor.setCharFormat(error_format)
+            # Status 0 bleibt schwarz (unformatiert)
+        
+        # Auto-Scrolling
+        correct_count = status_list.count(1)  # Anzahl korrekter Zeichen für Scrolling
+        self.check_and_scroll(correct_count)
 
     def check_and_scroll(self, correct_count):
         """

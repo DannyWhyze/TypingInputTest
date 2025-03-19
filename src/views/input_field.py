@@ -51,8 +51,8 @@ class InputField(QWidget):
         
         # Eingabe mit dem Zieltext vergleichen und farblich markieren
         typed_text = self.text_edit.toPlainText()
-        correct_count = self.model.check_typing(typed_text)
-        self.target_text_widget.update_colored_text(correct_count)
+        status_list = self.model.check_typing(typed_text)
+        self.target_text_widget.update_colored_text(status_list)
         
         # Aktualisiere andere Widgets
         window = self.window()

@@ -141,14 +141,26 @@ class MainModel:
     
     def check_typing(self, typed_text):
         """
-        Überprüft den eingegebenen Text und gibt zurück, wie viele Zeichen korrekt sind.
+        Überprüft den eingegebenen Text und gibt eine Liste mit Status-Codes zurück:
+        0 = noch nicht getippt
+        1 = korrekt getippt (grün)
+        2 = falsche Groß-/Kleinschreibung (gelb)
+        3 = falscher Buchstabe (rot)
         """
+        result = [0] * len(self.current_text)  # Alle Zeichen als "noch nicht getippt" markieren
         correct_count = 0
+        
         for i, (target_char, typed_char) in enumerate(zip(self.current_text, typed_text)):
             if target_char == typed_char:
+                # Korrekter Buchstabe
+                result[i] = 1
                 correct_count += 1
+            elif target_char.lower() == typed_char.lower():
+                # Richtiger Buchstabe, falsche Groß-/Kleinschreibung
+                result[i] = 2
             else:
-                break  # Bei erstem Fehler abbrechen
-                
+                # Falscher Buchstabe
+                result[i] = 3
+        
         self.typed_correctly = correct_count
-        return correct_count
+        return result
