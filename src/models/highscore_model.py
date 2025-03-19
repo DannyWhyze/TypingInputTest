@@ -2,12 +2,17 @@ import json
 from datetime import datetime
 
 class Highscore:
-    def __init__(self, name, score, duration, words_per_minute, date=None):
+    def __init__(self, name, score, duration, words_per_minute, date=None, 
+                 chars_per_minute=0, errors_per_minute=0, max_chars_per_second=0):
         self.name = name
         self.score = score
         self.duration = duration  # in Minuten (1, 3 oder 5)
         self.words_per_minute = words_per_minute
         self.date = date or datetime.now().strftime("%Y-%m-%d %H:%M")
+        # Neue Felder
+        self.chars_per_minute = chars_per_minute
+        self.errors_per_minute = errors_per_minute
+        self.max_chars_per_second = max_chars_per_second
 
 class HighscoreModel:
     def __init__(self, file_path='highscores.json'):
@@ -39,7 +44,10 @@ class HighscoreModel:
                 'score': h.score,
                 'duration': h.duration,
                 'words_per_minute': h.words_per_minute,
-                'date': h.date
+                'date': h.date,
+                'chars_per_minute': h.chars_per_minute,
+                'errors_per_minute': h.errors_per_minute,
+                'max_chars_per_second': h.max_chars_per_second
             })
             
         with open(self.file_path, 'w', encoding='utf-8') as f:
@@ -58,7 +66,10 @@ class HighscoreModel:
                     item['score'],
                     item['duration'],
                     item['words_per_minute'],
-                    item['date']
+                    item['date'],
+                    item.get('chars_per_minute', 0),
+                    item.get('errors_per_minute', 0),
+                    item.get('max_chars_per_second', 0)
                 )
                 self.highscores.append(highscore)
                 

@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLabel, QPushButton, QTableWidget,
-                           QTableWidgetItem, QComboBox, QHBoxLayout)
+                           QTableWidgetItem, QComboBox, QHBoxLayout, QHeaderView)
 from PyQt6.QtCore import Qt
 
 class HighscoresWindow(QDialog):
@@ -8,7 +8,7 @@ class HighscoresWindow(QDialog):
         self.highscore_model = highscore_model
         
         self.setWindowTitle("Tipptest - Highscores")
-        self.setFixedSize(600, 400)
+        self.setFixedSize(900, 400)
         self.setModal(True)
         
         # Hauptlayout
@@ -37,10 +37,26 @@ class HighscoresWindow(QDialog):
         filter_layout.addStretch(1)
         self.layout.addLayout(filter_layout)
         
-        # Tabelle für Highscores
+        # Tabelle für Highscores mit überarbeiteten Spalten
         self.table = QTableWidget()
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["Platz", "Name", "Punkte", "WPM", "Dauer", "Datum"])
+        self.table.setColumnCount(8)
+        
+        # Spaltenüberschriften mit mehrzeiligen Texten
+        self.table.setHorizontalHeaderLabels([
+            "Platz", 
+            "Name", 
+            "Punkte", 
+            "Zeichen\npro Minute", 
+            "Fehler\npro Minute", 
+            "Maximale\nZeichen/Sek", 
+            "Dauer", 
+            "Datum"
+        ])
+        
+        # Höhe der Header-Zeile vergrößern für mehrzeilige Beschriftungen
+        self.table.horizontalHeader().setMinimumHeight(45)
+        
+        # Spaltenbreiten anpassen und Tabelle konfigurieren
         self.table.horizontalHeader().setStretchLastSection(True)
         self.layout.addWidget(self.table)
         
@@ -71,6 +87,16 @@ class HighscoresWindow(QDialog):
         
         self.table.setRowCount(len(highscores))
         
+        # Spaltenbreiten setzen
+        self.table.setColumnWidth(0, 50)   # Platz
+        self.table.setColumnWidth(1, 150)  # Name
+        self.table.setColumnWidth(2, 80)   # Punkte
+        self.table.setColumnWidth(3, 100)  # Zeichen pro Minute
+        self.table.setColumnWidth(4, 100)  # Fehler pro Minute
+        self.table.setColumnWidth(5, 100)  # Max. Zeichen pro Sekunde
+        self.table.setColumnWidth(6, 80)   # Dauer
+        self.table.setColumnWidth(7, 150)  # Datum
+        
         for row, highscore in enumerate(highscores):
             # Platz
             self.table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
@@ -78,9 +104,13 @@ class HighscoresWindow(QDialog):
             self.table.setItem(row, 1, QTableWidgetItem(highscore.name))
             # Punkte
             self.table.setItem(row, 2, QTableWidgetItem(str(highscore.score)))
-            # WPM
-            self.table.setItem(row, 3, QTableWidgetItem(str(highscore.words_per_minute)))
+            # Zeichen pro Minute
+            self.table.setItem(row, 3, QTableWidgetItem(str(highscore.chars_per_minute)))
+            # Fehler pro Minute
+            self.table.setItem(row, 4, QTableWidgetItem(str(highscore.errors_per_minute)))
+            # Max. Zeichen pro Sekunde
+            self.table.setItem(row, 5, QTableWidgetItem(str(highscore.max_chars_per_second)))
             # Dauer
-            self.table.setItem(row, 4, QTableWidgetItem(f"{highscore.duration} Min."))
+            self.table.setItem(row, 6, QTableWidgetItem(f"{highscore.duration} Min."))
             # Datum
-            self.table.setItem(row, 5, QTableWidgetItem(highscore.date))
+            self.table.setItem(row, 7, QTableWidgetItem(highscore.date))

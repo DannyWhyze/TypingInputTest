@@ -289,12 +289,22 @@ class ResultsWindow(QDialog):
         typed_text = self.get_typed_text()
         score = self.statistics_model.calculate_score(typed_text)
         duration = self.model.timer_duration // 60  # Von Sekunden zu Minuten
-        keystrokes_per_minute = round(self.model.keystroke_count / (self.model.timer_duration / 60), 1)
+        
+        # Neue Metriken berechnen
+        chars_per_minute = round(self.model.keystroke_count / (self.model.timer_duration / 60), 1)
+        error_rate = self.statistics_model.calculate_error_rate()
+        errors_per_minute = round((error_rate / 100) * chars_per_minute, 1)  # Fehlerquote * CPM
+        max_chars_per_second = self.statistics_model.max_keystrokes_per_second
         
         # Den Highscore speichern
         parent = self.parent()
         if parent and hasattr(parent, 'buttons') and hasattr(parent.buttons, 'highscore_model'):
-            parent.buttons.highscore_model.add_highscore(name, score, duration, keystrokes_per_minute)
+            parent.buttons.highscore_model.add_highscore(
+                name, score, duration, chars_per_minute,
+                chars_per_minute=chars_per_minute,
+                errors_per_minute=errors_per_minute,
+                max_chars_per_second=max_chars_per_second
+            )
             QMessageBox.information(self, "Erfolg", f"Dein Highscore wurde gespeichert, {name}!")
             self.hide_highscore_input()
             # Flag setzen, dass gespeichert wurde
