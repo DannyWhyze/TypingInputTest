@@ -205,3 +205,8 @@ class ButtonsUI(QWidget):
             window = self.window()
             if hasattr(window, 'countdown'):
                 window.countdown.show_initial_time()
+
+    def reset_time_buttons(self):
+        """Setzt alle Zeit-Buttons auf den Standard-Stil zurück"""
+        for btn in self.time_buttons:
+            btn.setStyleSheet(self.normal_time_style)

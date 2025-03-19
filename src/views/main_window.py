@@ -118,6 +118,9 @@ class MainWindow(QMainWindow):
         self.countdown.time_label.setText("00:00")
         self.target_text.refresh_text()
         
+        # Zeit-Buttons zurücksetzen (nicht mehr gelb markiert)
+        self.buttons.reset_time_buttons()
+        
         # Ergebnis-Button deaktivieren und eventuelle Click-Signale trennen
         if hasattr(self, 'buttons') and hasattr(self.buttons, 'results_button'):
             self.buttons.results_button.setEnabled(False)
