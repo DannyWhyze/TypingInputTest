@@ -110,3 +110,167 @@ class StatisticsModel:
         """Aktualisiert die maximale Tippgeschwindigkeit"""
         if current_speed > self.max_keystrokes_per_second:
             self.max_keystrokes_per_second = current_speed
+
+    def calculate_score(self, typed_text):
+        """Berechnet die Gesamtpunktzahl basierend auf der Tippstatistik"""
+        stats = self.calculate_typing_statistics(typed_text)
+        
+        # Basispunkte: NUR für korrekte Zeichen (grüne)
+        base_points = stats['char']['correct']
+        
+        # Abzüge für Fehler
+        deductions = 0
+        
+        # Abzug für falsche Wörter (-2 pro Wort)
+        deductions += stats['word']['wrong'] * 2
+        
+        # Abzug für halb-richtige Wörter (-1 pro Wort) - DIES FEHLTE
+        deductions += stats['word']['case_error'] * 1
+        
+        # Spezieller Abzug für Wörter mit gemischten Fehlern
+        mixed_error_words = self.count_mixed_error_words(typed_text)
+        deductions += mixed_error_words * 2
+        
+        # Abzug für Backspaces (-1 pro Backspace)
+        deductions += self.backspaces
+        
+        # Bonus für erfolgreiche Korrekturen (+0.5 pro Korrektur)
+        corrections_bonus = min(self.backspaces, stats['char']['correct']) * 0.5
+        
+        # NEUE BONUS-REGELN:
+        
+        # 1. Wort-Sequenzen: +50 Punkte für 10 fehlerfreie Wörter hintereinander
+        sequence_bonus = self.calculate_word_sequence_bonus(typed_text)
+        
+        # 2. Geschwindigkeit: Bonus basierend auf Anschlägen pro Minute
+        speed_bonus = self.calculate_speed_bonus()
+        
+        # 3. Konstanz: +200 Punkte bei gleichmäßigem Tipprhythmus
+        consistency_bonus = self.calculate_consistency_bonus()
+        
+        # Gesamtpunktzahl berechnen (nicht unter 0 gehen)
+        total_score = max(0, base_points - deductions + corrections_bonus + 
+                         sequence_bonus + speed_bonus + consistency_bonus)
+        
+        # Schwierigkeitsmultiplikator je nach Testdauer
+        difficulty_multiplier = self.get_difficulty_multiplier()
+        
+        # Finale Punktzahl mit Schwierigkeitsgrad multiplizieren und runden
+        final_score = round(total_score * difficulty_multiplier)
+        
+        return final_score
+
+    def count_mixed_error_words(self, typed_text):
+        """Zählt Wörter mit gemischten Fehlertypen (gelb und rot)"""
+        mixed_error_words = 0
+        
+        # Text in Wörter aufteilen
+        target_words = self.main_model.current_text.split()
+        typed_words = typed_text.split()
+        status_list = self.main_model.check_typing(typed_text)
+        
+        # Für jedes Wort prüfen wir, ob es gemischte Fehler hat
+        start_idx = 0
+        for i, target_word in enumerate(target_words):
+            if i >= len(typed_words):
+                break
+                
+            # Indizes für dieses Wort berechnen
+            word_length = len(target_word)
+            end_idx = start_idx + word_length
+            
+            # Status-Codes für dieses Wort extrahieren
+            if end_idx <= len(status_list):
+                word_status = status_list[start_idx:end_idx]
+                
+                # Prüfen, ob das Wort gelbe UND rote Markierungen hat
+                has_yellow = 2 in word_status
+                has_red = 3 in word_status
+                
+                if has_yellow and has_red:
+                    mixed_error_words += 1
+                    
+            # Für nächstes Wort vorbereiten (inkl. Leerzeichen)
+            start_idx = end_idx + 1
+        
+        return mixed_error_words
+
+    def calculate_word_sequence_bonus(self, typed_text):
+        """Bonus für Sequenzen von 10 fehlerfreien Wörtern in Folge"""
+        target_words = self.main_model.current_text.split()
+        typed_words = typed_text.split()
+        status_list = self.main_model.check_typing(typed_text)
+        
+        bonus = 0
+        correct_sequence = 0
+        start_idx = 0
+        
+        for i, target_word in enumerate(target_words):
+            if i >= len(typed_words):
+                break
+                
+            word_length = len(target_word)
+            end_idx = start_idx + word_length
+            
+            if end_idx <= len(status_list):
+                word_status = status_list[start_idx:end_idx]
+                
+                if all(status == 1 for status in word_status):  # Alle Zeichen sind korrekt (grün)
+                    correct_sequence += 1
+                    if correct_sequence >= 10:
+                        bonus += 50
+                        correct_sequence = 0  # Zähler zurücksetzen nach Bonusvergabe
+                else:
+                    correct_sequence = 0  # Sequenz unterbrochen
+                
+            start_idx = end_idx + 1
+        
+        return bonus
+
+    def calculate_speed_bonus(self):
+        """Bonus basierend auf Anschlägen pro Minute"""
+        keystrokes_per_minute = 0
+        
+        # Wenn genug Zeit vergangen ist, um Geschwindigkeit zu messen
+        if self.main_model.elapsed_time > 0:
+            # Anschläge pro Minute berechnen
+            seconds = self.main_model.elapsed_time
+            keystrokes_per_minute = (self.main_model.keystroke_count / seconds) * 60
+        
+        # Bonus basierend auf Geschwindigkeit
+        if keystrokes_per_minute >= 100:
+            return 500
+        elif keystrokes_per_minute >= 80:
+            return 250
+        elif keystrokes_per_minute >= 60:
+            return 100
+        
+        return 0
+
+    def calculate_consistency_bonus(self):
+        """Bonus für gleichmäßiges Tippen ohne große Geschwindigkeitsschwankungen"""
+        # Diese Berechnung erfordert das Tracken von Geschwindigkeiten über Zeit
+        # Wir verwenden eine vereinfachte Implementierung basierend auf 
+        # dem Verhältnis von max_speed zu Durchschnittsgeschwindigkeit
+        
+        avg_speed = self.main_model.get_keystrokes_per_second()
+        
+        if avg_speed == 0:
+            return 0
+        
+        # Konsistenz: Wenn die maximale Geschwindigkeit nicht mehr als 25% über dem Durchschnitt liegt
+        # und nie unter 80% des Durchschnitts fällt, geben wir den Bonus
+        if self.max_keystrokes_per_second <= avg_speed * 1.25 and self.max_keystrokes_per_second >= avg_speed * 0.8:
+            return 200
+        
+        return 0
+
+    def get_difficulty_multiplier(self):
+        """Gibt den Schwierigkeitsmultiplikator je nach Timer-Dauer zurück"""
+        if self.main_model.timer_duration == 60:      # 1 Minute
+            return 1.0
+        elif self.main_model.timer_duration == 180:    # 3 Minuten
+            return 1.1
+        elif self.main_model.timer_duration == 300:    # 5 Minuten
+            return 1.2
+        return 1.0
