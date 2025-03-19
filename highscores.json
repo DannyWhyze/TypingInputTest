@@ -1,5 +1,15 @@
 [
   {
+    "name": "DW",
+    "score": 1006,
+    "duration": 1,
+    "words_per_minute": 330.0,
+    "date": "2025-03-19 21:29",
+    "chars_per_minute": 330.0,
+    "errors_per_minute": 8.9,
+    "max_chars_per_second": 8.0
+  },
+  {
     "name": "Dw",
     "score": 906,
     "duration": 1,
