@@ -38,7 +38,7 @@ Typing-Test-App
 └── tests                       # Test cases
     ├── test_models.py          # Tests for models
     ├── test_statistics.py      # Tests for statistics functions
-    └── test_views.py           # Tests for UI components
+    
 ```
 ## Features
 
